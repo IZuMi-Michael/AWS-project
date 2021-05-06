@@ -46,15 +46,24 @@ app.get('/calc', (req, res) => {
     const encodedQuery = encodeURIComponent(Object.keys(req.query))
     const decodedQuery = decodeURIComponent(encodedQuery.replace(/\%20/g, '+'))
 　　 
-    const regexNeg = new RegExp('[^-0-9()+*/]')
-    const operatorSeparator = (string) => { 
-        return string.split(/([-()+*/])/g) 
+    const regex = new RegExp('[^-0-9()+*/]')
+    const regexNeg = new RegExp('^(-[0-9]+)')
+    const regexNegMatch = decodedQuery.match(regexNeg)
+
+    const regexNegFormatter = (arr) => {
+        const negInt = arr[0]
+        return decodedQuery.replace(regexNeg, `(0${negInt})`)
     }
 
-    if (regexNeg.test(decodedQuery)) {
+    const spaceSeparator = (string) => { 
+        return string.split(/([-()+*/])/g) 
+    } 
+
+    if (regex.test(decodedQuery)) {
         res.send('ERROR\n').end()
     } else {
-        let parsedInfix = operatorSeparator(decodedQuery).filter(i => i)
+        let spaceSeparatedInfix = spaceSeparator((regexNegMatch) ? regexNegFormatter(regexNegMatch) : decodedQuery)
+        let parsedInfix = spaceSeparatedInfix.filter(i => i)
         let outputArr = inToPost(parsedInfix)
         let result = evaluateOutputArr(outputArr)
         res.send(`${result}\n`).end()
