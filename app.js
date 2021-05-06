@@ -115,22 +115,18 @@ app.get('/stocker', (req, res) => {
             res.send('ERROR\n').end()
         } else if (parameter.name.length > 8 ) {
             res.send('ERROR\n').end()
-        } else if (parameter.price) {
-            if (parameter.price <= 0) {
-                res.send('ERROR\n').end()
+        } else if (parameter.price <= 0) {
+            res.send('ERROR\n').end()
+        } else if (parameter.amount) {
+            if (!(parameter.amount > stockTable.names[parameter.name].amount)) {
+                stockTable.addSales(!parameter.price ? 0 : parameter.price, parameter.amount)
+                stockTable.names[parameter.name].amount -= Number(parameter.amount)
             } else {
-                if (parameter.amount) {
-                    if (!(parameter.amount > stockTable.names[parameter.name].amount)) {
-                        stockTable.addSales(parameter.price, parameter.amount)
-                        stockTable.names[parameter.name].amount -= Number(parameter.amount)
-                    } else {
-                        res.send('ERROR\n').end()
-                    }
-                } else {
-                    stockTable.addSales(parameter.price, 1)
-                    stockTable.names[parameter.name].amount -= 1
-                }
+                res.send('ERROR\n').end()
             }
+        } else {
+            stockTable.addSales(!parameter.price ? 0 : parameter.price, 1)
+            stockTable.names[parameter.name].amount -= 1
         }
         res.end()
     } else if (parameter.function === 'checksales') {
